@@ -72,8 +72,6 @@ if __name__ == "__main__":
     stock = "AAPL"
     get_stock_price(stock)
 
-    # Buy 1 share
     place_order(stock, qty=1, side="buy")
 
-    # Sell 1 share only if owned
     place_sell_order_if_owned(stock, qty=1)
