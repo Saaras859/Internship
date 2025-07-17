@@ -1,0 +1,151 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock News Sentiment Trader</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .card { background: #f8f9fa; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .half { flex: 1 1 45%; min-width: 300px; }
+        .full { flex: 100%; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+        .positive { color: green; }
+        .negative { color: red; }
+        .neutral { color: #888; }
+        form { margin: 20px 0; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0069d9; }
+    </style>
+</head>
+<body>
+    <h1>Stock News Sentiment Trader</h1>
+    
+    <form action="/fetch" method="post">
+        <button type="submit">Fetch Latest News & Analyze</button>
+    </form>
+    
+    <div class="container">
+        <!-- Sentiment Distribution Chart -->
+        <div class="card half">
+            <h2>Trading Decision Distribution</h2>
+            <canvas id="decisionChart"></canvas>
+        </div>
+        
+        <!-- Sentiment History Chart -->
+        <div class="card half">
+            <h2>Sentiment Over Time</h2>
+            <canvas id="sentimentChart"></canvas>
+        </div>
+        
+        <!-- Latest Trading Decisions -->
+        <div class="card half">
+            <h2>Recent Trading Decisions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Avg Sentiment</th>
+                        <th>Decision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trade in trades %}
+                    <tr>
+                        <td>{{ trade.timestamp }}</td>
+                        <td class="{% if trade.sentiment > 0.1 %}positive{% elif trade.sentiment < -0.1 %}negative{% else %}neutral{% endif %}">
+                            {{ trade.sentiment|round(3) }}
+                        </td>
+                        <td class="{% if trade.decision == 'BUY' %}positive{% elif trade.decision == 'SELL' %}negative{% else %}neutral{% endif %}">
+                            {{ trade.decision }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Latest Headlines -->
+        <div class="card half">
+            <h2>Recent News Headlines</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Headline</th>
+                        <th>Sentiment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for headline in headlines %}
+                    <tr>
+                        <td>{{ headline.timestamp }}</td>
+                        <td>{{ headline.headline }}</td>
+                        <td class="{% if headline.sentiment > 0.1 %}positive{% elif headline.sentiment < -0.1 %}negative{% else %}neutral{% endif %}">
+                            {{ headline.sentiment|round(3) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Decision Distribution Chart
+        const decisionCtx = document.getElementById('decisionChart').getContext('2d');
+        const decisionData = {
+            labels: ['BUY', 'SELL', 'HOLD'],
+            datasets: [{
+                label: 'Trading Decisions',
+                data: [
+                    {{ decision_dist.get('BUY', 0) }},
+                    {{ decision_dist.get('SELL', 0) }},
+                    {{ decision_dist.get('HOLD', 0) }}
+                ],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(108, 117, 125, 0.7)'
+                ]
+            }]
+        };
+        
+        new Chart(decisionCtx, {
+            type: 'pie',
+            data: decisionData,
+            options: { responsive: true }
+        });
+        
+        // Sentiment History Chart
+        const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+        const sentimentData = {
+            labels: [{% for trade in trades %}"{{ trade.timestamp }}",{% endfor %}],
+            datasets: [{
+                label: 'Average Sentiment',
+                data: [{% for trade in trades %}{{ trade.sentiment }},{% endfor %}],
+                borderColor: 'rgba(0, 123, 255, 1)',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                fill: true
+            }]
+        };
+        
+        new Chart(sentimentCtx, {
+            type: 'line',
+            data: sentimentData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        min: -1,
+                        max: 1
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
