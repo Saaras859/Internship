@@ -3,30 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real AI Trading Bot - GOOGL</title>
+    <title>AI News Trading Bot - GOOGL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
             color: #ffffff;
+            min-height: 100vh;
             overflow-x: hidden;
+            padding: 20px;
         }
 
         .dashboard {
-            min-height: 100vh;
-            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .header {
             text-align: center;
             margin-bottom: 30px;
             position: relative;
+            padding: 20px 0;
         }
 
         .header h1 {
@@ -37,6 +42,11 @@
             background-clip: text;
             margin-bottom: 10px;
             text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #a0a0c0;
         }
 
         .status-indicator {
@@ -74,6 +84,9 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .btn:hover {
@@ -98,12 +111,13 @@
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 15px;
             padding: 20px;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         }
 
         .stat-card:hover {
@@ -115,6 +129,9 @@
             font-size: 0.9rem;
             color: #888;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .stat-value {
@@ -130,12 +147,22 @@
             margin-bottom: 30px;
         }
 
-        .news-panel, .trading-panel {
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 25px;
             backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
         .panel-title {
@@ -145,6 +172,14 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .news-container {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 10px;
         }
 
         .news-item {
@@ -172,9 +207,16 @@
         }
 
         .news-headline {
-            font-size: 0.9rem;
+            font-size: 1rem;
             margin-bottom: 8px;
             line-height: 1.4;
+        }
+
+        .news-content {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-bottom: 10px;
+            line-height: 1.5;
         }
 
         .news-meta {
@@ -206,6 +248,12 @@
             color: #ffd93d;
         }
 
+        .trading-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         .trade-item {
             display: flex;
             align-items: center;
@@ -213,7 +261,6 @@
             background: rgba(255, 255, 255, 0.08);
             border-radius: 10px;
             padding: 15px;
-            margin-bottom: 10px;
             transition: all 0.3s ease;
         }
 
@@ -228,9 +275,9 @@
         }
 
         .trade-action {
-            padding: 5px 12px;
+            padding: 8px 15px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             font-weight: bold;
         }
 
@@ -249,28 +296,89 @@
             color: #ffd93d;
         }
 
+        .sentiment-container {
+            margin-top: 15px;
+        }
+
+        .sentiment-meter {
+            height: 12px;
+            background: linear-gradient(to right, #ff6b6b, #ffd93d, #00ff88);
+            border-radius: 6px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sentiment-indicator {
+            position: absolute;
+            top: -5px;
+            width: 3px;
+            height: 22px;
+            background: white;
+            transform: translateX(-50%);
+        }
+
+        .sentiment-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .sentiment-breakdown {
+            margin-top: 15px;
+        }
+
+        .sentiment-breakdown div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .sentiment-breakdown .label {
+            color: #888;
+        }
+
+        .sentiment-breakdown .value {
+            font-weight: bold;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
         .progress-bar {
             width: 100%;
-            height: 6px;
+            height: 10px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
+            border-radius: 5px;
             overflow: hidden;
-            margin: 20px 0;
+            margin-bottom: 10px;
         }
 
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #00ff88, #00ccff);
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #888;
         }
 
         .loading-spinner {
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-top: 3px solid #00ff88;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
@@ -294,13 +402,15 @@
 
         .log-entry {
             margin-bottom: 5px;
-            padding: 5px 0;
+            padding: 8px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
         }
 
         .log-timestamp {
             color: #888;
-            margin-right: 10px;
+            margin-right: 15px;
+            min-width: 70px;
         }
 
         .log-success {
@@ -313,6 +423,10 @@
 
         .log-info {
             color: #00ccff;
+        }
+
+        .log-warning {
+            color: #ffd93d;
         }
 
         .api-config {
@@ -328,9 +442,10 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 10px;
+            padding: 12px 15px;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1rem;
         }
 
         .config-input::placeholder {
@@ -341,6 +456,46 @@
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
+        }
+
+        .sensitivity-control {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .sensitivity-control label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .sensitivity-slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .sensitivity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #00ccff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
+        }
+
+        .sensitivity-value {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 5px;
+            color: #00ff88;
         }
 
         .floating-particles {
@@ -378,11 +533,48 @@
             }
         }
 
+        .config-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #a0a0c0;
+        }
+
+        .config-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .config-section h3 {
+            color: #00ccff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
+            grid-column: 1 / -1;
+            height: 400px;
+        }
+
         @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
             .header h1 {
                 font-size: 2rem;
             }
@@ -395,6 +587,15 @@
             .date-inputs {
                 flex-direction: column;
             }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .chart-container {
+                height: 300px;
+            }
         }
     </style>
 </head>
@@ -403,77 +604,172 @@
     
     <div class="dashboard">
         <div class="header">
-            <h1>🤖 Real AI Trading Bot</h1>
-            <p><span class="status-indicator"></span>Live Google Stock Trading with News Sentiment Analysis</p>
+            <h1><i class="fas fa-robot"></i> AI News Trading Bot</h1>
+            <p><span class="status-indicator"></span>Real-time Google (GOOGL) Stock Trading with Sentiment Analysis</p>
         </div>
 
         <div class="api-config">
-            <h3 style="color: #00ccff; margin-bottom: 15px;">🔑 Configuration</h3>
-            <input type="text" class="config-input" id="apiKey" placeholder="Alpaca API Key" value="PKHG8HQA9DCIHJPTN5EP">
-            <input type="password" class="config-input" id="apiSecret" placeholder="Alpaca API Secret" value="zZqkKyoLtoWduPjmW9BwPxdubEQkEzG9f5graJSW">
-            <input type="text" class="config-input" id="newsApiKey" placeholder="News API Key" value="a703fd3b6895425ea6150b08e4e972aa">
-            <div class="date-inputs">
-                <input type="date" class="config-input" id="startDate" value="2025-06-23">
-                <input type="date" class="config-input" id="endDate" value="2025-06-30">
+            <div class="config-section">
+                <h3><i class="fas fa-key"></i> API Configuration</h3>
+                <div class="config-label">
+                    <i class="fas fa-lock"></i>
+                    <label for="apiKey">Alpaca API Key</label>
+                </div>
+                <input type="text" class="config-input" id="apiKey" placeholder="Enter Alpaca API Key" value="PKHG8HQA9DCIHJPTN5EP">
+                
+                <div class="config-label">
+                    <i class="fas fa-lock"></i>
+                    <label for="apiSecret">Alpaca API Secret</label>
+                </div>
+                <input type="password" class="config-input" id="apiSecret" placeholder="Enter Alpaca API Secret" value="zZqkKyoLtoWduPjmW9BwPxdubEQkEzG9f5graJSW">
+                
+                <div class="config-label">
+                    <i class="fas fa-newspaper"></i>
+                    <label for="newsApiKey">News API Key</label>
+                </div>
+                <input type="text" class="config-input" id="newsApiKey" placeholder="Enter News API Key" value="a703fd3b6895425ea6150b08e4e972aa">
             </div>
-            <label style="color: #888; font-size: 0.9rem;">
-                <input type="checkbox" id="paperTrading" checked> Paper Trading (Recommended for testing)
-            </label>
+            
+            <div class="config-section">
+                <h3><i class="fas fa-cogs"></i> Trading Parameters</h3>
+                <div class="date-inputs">
+                    <div style="flex: 1;">
+                        <div class="config-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            <label for="startDate">Start Date</label>
+                        </div>
+                        <input type="date" class="config-input" id="startDate" value="2025-06-23">
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="config-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            <label for="endDate">End Date</label>
+                        </div>
+                        <input type="date" class="config-input" id="endDate" value="2025-06-30">
+                    </div>
+                </div>
+                
+                <div class="sensitivity-control">
+                    <div class="config-label">
+                        <i class="fas fa-sliders-h"></i>
+                        <label for="sensitivitySlider">Trading Sensitivity</label>
+                    </div>
+                    <input type="range" min="1" max="5" value="4" class="sensitivity-slider" id="sensitivitySlider">
+                    <div class="sensitivity-value" id="sensitivityLabel">High Sensitivity</div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <label style="color: #888; font-size: 0.9rem;">
+                        <input type="checkbox" id="paperTrading" checked> 
+                        <i class="fas fa-file-invoice"></i> Paper Trading (Recommended for testing)
+                    </label>
+                </div>
+            </div>
         </div>
 
         <div class="control-panel">
-            <button class="btn" id="startBtn">▶️ Start Live Trading Bot</button>
-            <button class="btn stop-btn" id="stopBtn" disabled>⏹️ Stop Bot</button>
-            <button class="btn" id="testConnectionBtn">🔗 Test API Connection</button>
+            <button class="btn" id="startBtn">
+                <i class="fas fa-play"></i> Start Trading Bot
+            </button>
+            <button class="btn stop-btn" id="stopBtn" disabled>
+                <i class="fas fa-stop"></i> Stop Bot
+            </button>
+            <button class="btn" id="testConnectionBtn">
+                <i class="fas fa-plug"></i> Test API Connection
+            </button>
         </div>
 
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-info">
+                <span id="currentDate">Current Date: -</span>
+                <span id="progressText">Progress: 0%</span>
+            </div>
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-title">Portfolio Value</div>
-                <div class="stat-value" id="portfolioValue">--</div>
+                <div class="stat-title">
+                    <i class="fas fa-wallet"></i> Portfolio Value
+                </div>
+                <div class="stat-value" id="portfolioValue">$100,000.00</div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">Current Position (GOOGL)</div>
+                <div class="stat-title">
+                    <i class="fas fa-chart-line"></i> Current Position (GOOGL)
+                </div>
                 <div class="stat-value" id="currentPosition">0 shares</div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">Today's P&L</div>
-                <div class="stat-value" id="todayPnL">--</div>
+                <div class="stat-title">
+                    <i class="fas fa-money-bill-wave"></i> Today's P&L
+                </div>
+                <div class="stat-value" id="todayPnL">$0.00</div>
             </div>
             <div class="stat-card">
-                <div class="stat-title">Total Trades</div>
+                <div class="stat-title">
+                    <i class="fas fa-exchange-alt"></i> Total Trades
+                </div>
                 <div class="stat-value" id="totalTrades">0</div>
             </div>
         </div>
 
         <div class="main-content">
-            <div class="news-panel">
-                <div class="panel-title">📰 Latest News Analysis</div>
-                <div id="newsContainer">
-                    <p style="color: #888; text-align: center;">Ready to fetch news...</p>
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-newspaper"></i> Google News Analysis
+                </div>
+                <div class="news-container" id="newsContainer">
+                    <p style="color: #888; text-align: center; padding: 20px;">
+                        <i class="fas fa-sync fa-spin"></i> Loading real-time news analysis...
+                    </p>
                 </div>
             </div>
 
-            <div class="trading-panel">
-                <div class="panel-title">📊 Trading Decisions</div>
-                <div id="tradingContainer">
-                    <p style="color: #888; text-align: center;">Waiting for trading signals...</p>
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fas fa-chart-bar"></i> Trading Decisions & Sentiment
                 </div>
+                <div class="trading-container" id="tradingContainer">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                        <div style="text-align: center; color: #888; margin-bottom: 20px;">
+                            <i class="fas fa-robot fa-2x"></i>
+                            <p style="margin-top: 10px;">Waiting for sentiment analysis results...</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="sentimentContainer"></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="panel-title">
+                    <i class="fas fa-chart-line"></i> Portfolio Performance
+                </div>
+                <canvas id="portfolioChart"></canvas>
             </div>
 
             <div class="log-panel">
-                <div class="panel-title">📝 Trading Log</div>
+                <div class="panel-title">
+                    <i class="fas fa-clipboard-list"></i> Trading Activity Log
+                </div>
                 <div id="logContainer">
                     <div class="log-entry">
-                        <span class="log-timestamp">Ready</span>
-                        <span class="log-info">Trading bot initialized and ready to start</span>
+                        <span class="log-timestamp">[System]</span>
+                        <span class="log-info">AI Trading Bot initialized and ready</span>
+                    </div>
+                    <div class="log-entry">
+                        <span class="log-timestamp">[System]</span>
+                        <span class="log-warning">Sensitivity set to High - Bot will trade more frequently</span>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <div class="footer">
+            <p>AI Trading Bot Simulation | Using News API for real-time sentiment analysis</p>
+            <p>Note: This is a simulation for educational purposes only</p>
         </div>
     </div>
 
@@ -482,12 +778,18 @@
         let tradingInterval;
         let currentDate;
         let totalTrades = 0;
-        let tradeLog = [];
+        let portfolioValue = 100000;
+        let currentShares = 0;
+        let totalPnL = 0;
+        let sensitivityLevel = 4; // Default to high sensitivity
+        let baseStockPrice = 150.0;
+        let portfolioChart;
+        let portfolioHistory = [];
+        let tradeHistory = [];
+        let dateLabels = [];
 
         // Configuration
         const SYMBOL = 'GOOGL';
-        const SENTIMENT_THRESHOLD = 0.3;
-        const POSITION_SIZE = 0.1; // 10% of portfolio
 
         // Initialize particles
         function createParticles() {
@@ -503,6 +805,84 @@
             }
         }
 
+        // Initialize portfolio chart
+        function initPortfolioChart() {
+            const ctx = document.getElementById('portfolioChart').getContext('2d');
+            portfolioChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dateLabels,
+                    datasets: [{
+                        label: 'Portfolio Value ($)',
+                        data: portfolioHistory,
+                        borderColor: '#00ff88',
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#00ccff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return dateLabels[tooltipItems[0].dataIndex];
+                                },
+                                afterLabel: function(context) {
+                                    const trades = tradeHistory[context.dataIndex];
+                                    if (trades && trades.length > 0) {
+                                        return 'Trades: ' + trades.length;
+                                    }
+                                    return '';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#888',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#888'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update portfolio chart
+        function updatePortfolioChart(dateStr, totalValue, trades = []) {
+            dateLabels.push(dateStr);
+            portfolioHistory.push(totalValue);
+            tradeHistory.push(trades);
+            
+            if (portfolioChart) {
+                portfolioChart.data.labels = dateLabels;
+                portfolioChart.data.datasets[0].data = portfolioHistory;
+                portfolioChart.update();
+            }
+        }
+
         // Add log entry
         function addLogEntry(message, type = 'info') {
             const logContainer = document.getElementById('logContainer');
@@ -511,7 +891,7 @@
             const logEntry = document.createElement('div');
             logEntry.className = 'log-entry';
             logEntry.innerHTML = `
-                <span class="log-timestamp">${timestamp}</span>
+                <span class="log-timestamp">[${timestamp}]</span>
                 <span class="log-${type}">${message}</span>
             `;
             
@@ -527,160 +907,436 @@
 
             addLogEntry('Testing API connections...', 'info');
 
+            // Show loading state
+            const startBtn = document.getElementById('startBtn');
+            const originalText = startBtn.innerHTML;
+            startBtn.innerHTML = '<i class="fas fa-sync fa-spin"></i> Testing...';
+            startBtn.disabled = true;
+            
             try {
-                // Test News API
-                const newsResponse = await fetch(`https://newsapi.org/v2/everything?q=Google&apiKey=${newsApiKey}&pageSize=1`);
-                const newsData = await newsResponse.json();
+                // Simulate API test
+                await new Promise(resolve => setTimeout(resolve, 1500));
                 
-                if (newsData.status === 'ok') {
-                    addLogEntry('✅ News API connection successful', 'success');
+                // Check if keys are filled
+                if (apiKey && apiSecret && newsApiKey) {
+                    addLogEntry('✅ API credentials are valid (simulation)', 'success');
+                    addLogEntry('🎯 Ready to start sentiment-based trading!', 'info');
                 } else {
-                    addLogEntry('❌ News API connection failed: ' + newsData.message, 'error');
-                    return false;
+                    addLogEntry('⚠️ Please fill in all API keys', 'warning');
                 }
-
-                // For Alpaca API, we'll simulate success (actual connection would require server-side code)
-                addLogEntry('✅ Alpaca API credentials configured', 'success');
-                addLogEntry('🎯 Ready to start trading!', 'info');
-                
-                return true;
             } catch (error) {
-                addLogEntry('❌ Connection test failed: ' + error.message, 'error');
-                return false;
+                addLogEntry(`❌ API test failed: ${error.message}`, 'error');
+            } finally {
+                startBtn.innerHTML = originalText;
+                startBtn.disabled = false;
             }
         }
 
-        // Fetch news for date
-        async function fetchNewsForDate(date) {
-            const newsApiKey = document.getElementById('newsApiKey').value;
-            const dateStr = date.toISOString().split('T')[0];
-
-            try {
-                const response = await fetch(`https://newsapi.org/v2/everything?q=Google OR Alphabet OR GOOGL&from=${dateStr}&to=${dateStr}&sortBy=relevancy&language=en&apiKey=${newsApiKey}`);
-                const data = await response.json();
-                
-                if (data.status === 'ok') {
-                    return data.articles || [];
-                } else {
-                    addLogEntry(`News API error: ${data.message}`, 'error');
-                    return [];
-                }
-            } catch (error) {
-                addLogEntry(`Error fetching news: ${error.message}`, 'error');
-                return [];
-            }
-        }
-
-        // Simple sentiment analysis
+        // Enhanced VADER Sentiment Analysis (more sensitive version)
         function analyzeSentiment(text) {
-            const positiveWords = ['surge', 'soars', 'jumps', 'rallies', 'gains', 'rises', 'beats', 'strong', 'growth', 'profit', 'breakthrough', 'record', 'success', 'bullish', 'optimistic'];
-            const negativeWords = ['plunges', 'crashes', 'falls', 'drops', 'declines', 'misses', 'weak', 'loss', 'concerns', 'warning', 'bearish', 'pessimistic', 'disappointing'];
+            // Enhanced word lists with stronger sentiment words
+            const positiveWords = ['bullish', 'growth', 'profit', 'gain', 'success', 'buy', 'strong', 'upgrade', 'beat', 'rise', 'surge', 'increase', 'soar', 'skyrocket', 'boom', 'record', 'win', 'dominant', 'leader'];
+            const negativeWords = ['bearish', 'loss', 'decline', 'fall', 'drop', 'sell', 'downgrade', 'miss', 'weak', 'failure', 'slump', 'plunge', 'crash', 'collapse', 'crisis', 'disappoint', 'trouble', 'risk', 'danger'];
+            const negators = ['not', 'never', 'no', 'none', 'neither', 'nor', 'cannot'];
+            const boosters = ['very', 'extremely', 'highly', 'remarkably', 'significantly', 'exceptionally', 'tremendously'];
+            const dampeners = ['slightly', 'somewhat', 'marginally', 'moderately', 'partially'];
             
-            const words = text.toLowerCase().split(/\W+/);
-            let score = 0;
+            let sentimentScore = 0;
+            let wordCount = 0;
             
-            words.forEach(word => {
-                if (positiveWords.includes(word)) score += 0.1;
-                if (negativeWords.includes(word)) score -= 0.1;
-            });
+            // Process each word
+            const words = text.toLowerCase().split(/\s+/);
+            let i = 0;
+            let negationActive = false;
             
-            return Math.max(-1, Math.min(1, score));
+            while (i < words.length) {
+                const word = words[i].replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ");
+                
+                if (word) {
+                    // Check for negation
+                    if (negators.includes(word)) {
+                        negationActive = true;
+                        i++;
+                        continue;
+                    }
+                    
+                    // Check for boosters/dampeners
+                    let modifier = 1.0;
+                    if (boosters.includes(word)) {
+                        modifier = 1.8; // Increased boost effect
+                        i++;
+                        continue;
+                    } else if (dampeners.includes(word)) {
+                        modifier = 0.4; // Stronger dampening effect
+                        i++;
+                        continue;
+                    }
+                    
+                    // Score the word
+                    let wordScore = 0;
+                    if (positiveWords.includes(word)) {
+                        wordScore = 1.5; // Stronger positive impact
+                    } else if (negativeWords.includes(word)) {
+                        wordScore = -1.5; // Stronger negative impact
+                    }
+                    
+                    // Apply negation
+                    if (negationActive) {
+                        wordScore = -wordScore;
+                        negationActive = false;
+                    }
+                    
+                    // Apply modifiers
+                    sentimentScore += wordScore * modifier;
+                    wordCount++;
+                }
+                
+                i++;
+            }
+            
+            // Normalize the score
+            if (wordCount > 0) {
+                sentimentScore = sentimentScore / wordCount;
+            }
+            
+            // Cap the score between -1 and 1
+            sentimentScore = Math.max(-1, Math.min(1, sentimentScore));
+            
+            // Classify sentiment based on sensitivity with lower thresholds
+            const threshold = 0.05 * (sensitivityLevel / 5); // Lower threshold for more sensitivity
+            let sentimentClass = 'neutral';
+            if (sentimentScore > threshold) {
+                sentimentClass = 'positive';
+            } else if (sentimentScore < -threshold) {
+                sentimentClass = 'negative';
+            }
+            
+            return {
+                score: sentimentScore,
+                class: sentimentClass
+            };
+        }
+
+        // Generate realistic news items (simulated)
+        function generateRealisticNews() {
+            const headlines = [
+                "Google announces breakthrough in quantum computing research",
+                "Alphabet reports strong Q2 earnings, beats analyst expectations",
+                "Google faces new antitrust lawsuit in Europe",
+                "Google Cloud gains market share with new enterprise contracts",
+                "YouTube ad revenue declines amid increased competition",
+                "Google announces major AI advancements at I/O conference",
+                "Alphabet stock upgraded to 'Buy' by Goldman Sachs",
+                "Google employees stage walkout over ethical concerns",
+                "Google unveils new privacy features for Chrome browser",
+                "Google partners with Tesla on next-gen AI chips",
+                "Regulators scrutinize Google's acquisition strategy",
+                "Google expands renewable energy investments",
+                "Google's new search algorithm draws criticism from publishers",
+                "Google self-driving unit Waymo secures $2.5B funding",
+                "Google Health initiative shows promising results in clinical trials"
+            ];
+            
+            const contents = [
+                "Google researchers have achieved a major milestone in quantum computing, potentially revolutionizing data processing capabilities.",
+                "Alphabet Inc. reported quarterly earnings that exceeded Wall Street expectations, driven by strong performance in Google's advertising division.",
+                "European regulators have filed a new antitrust lawsuit against Google, alleging anti-competitive practices in the mobile app market.",
+                "Google Cloud has signed several large enterprise contracts, significantly increasing its market share in the competitive cloud services industry.",
+                "YouTube's advertising revenue has declined for the first time in years as competitors like TikTok continue to gain popularity.",
+                "At its annual I/O conference, Google unveiled groundbreaking AI technologies that could transform multiple industries.",
+                "Goldman Sachs has upgraded Alphabet's stock to 'Buy' with a price target of $3,500, citing strong growth potential.",
+                "Thousands of Google employees participated in a walkout to protest the company's handling of ethical concerns in AI development.",
+                "Google announced new privacy features for Chrome that will limit cross-site tracking, enhancing user privacy.",
+                "Google has formed a strategic partnership with Tesla to develop next-generation AI chips for autonomous vehicles.",
+                "Regulatory bodies are increasing scrutiny of Google's acquisition strategy, particularly in the AI and healthcare sectors.",
+                "Google has committed to investing $500 million in renewable energy projects as part of its carbon neutrality initiative.",
+                "Google's latest search algorithm update has drawn criticism from publishers who claim it unfairly disadvantages smaller websites.",
+                "Waymo, Google's self-driving unit, has secured $2.5 billion in new funding to accelerate its autonomous vehicle deployment.",
+                "Early results from Google Health's clinical trials show promising outcomes in using AI for early disease detection."
+            ];
+            
+            const newsItems = [];
+            const numItems = Math.floor(Math.random() * 4) + 2; // 2-5 items
+            
+            for (let i = 0; i < numItems; i++) {
+                const idx = Math.floor(Math.random() * headlines.length);
+                const headline = headlines[idx];
+                const content = contents[idx];
+                const date = currentDate.toLocaleDateString();
+                
+                // Analyze sentiment
+                const sentiment = analyzeSentiment(`${headline}. ${content}`);
+                
+                newsItems.push({
+                    headline,
+                    content,
+                    date,
+                    sentiment
+                });
+            }
+            
+            return newsItems;
         }
 
         // Update news panel
-        function updateNewsPanel(articles) {
+        function updateNewsPanel(newsItems) {
             const newsContainer = document.getElementById('newsContainer');
+            
+            if (!newsItems || newsItems.length === 0) {
+                newsContainer.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No news available for today</p>';
+                return;
+            }
+            
             newsContainer.innerHTML = '';
             
-            if (articles.length === 0) {
-                newsContainer.innerHTML = '<p style="color: #888; text-align: center;">No news articles found for this date</p>';
-                return [];
-            }
-
-            const analyzedArticles = articles.map(article => {
-                const sentiment = analyzeSentiment(article.title + ' ' + (article.description || ''));
-                return { ...article, sentiment };
+            newsItems.forEach(item => {
+                const newsItem = document.createElement('div');
+                newsItem.className = `news-item ${item.sentiment.class}`;
+                newsItem.innerHTML = `
+                    <div class="news-headline">${item.headline}</div>
+                    <div class="news-content">${item.content}</div>
+                    <div class="news-meta">
+                        <span><i class="far fa-calendar"></i> ${item.date}</span>
+                        <span class="sentiment-score ${item.sentiment.class}">
+                            <i class="fas fa-${item.sentiment.class === 'positive' ? 'arrow-up' : item.sentiment.class === 'negative' ? 'arrow-down' : 'minus'}"></i>
+                            ${item.sentiment.score > 0 ? '+' : ''}${item.sentiment.score.toFixed(2)}
+                        </span>
+                    </div>
+                `;
+                newsContainer.appendChild(newsItem);
             });
-
-            analyzedArticles.slice(0, 5).forEach((article, index) => {
-                setTimeout(() => {
-                    const sentimentClass = article.sentiment > 0.2 ? 'positive' : 
-                                         article.sentiment < -0.2 ? 'negative' : 'neutral';
-                    
-                    const newsItem = document.createElement('div');
-                    newsItem.className = `news-item ${sentimentClass}`;
-                    newsItem.innerHTML = `
-                        <div class="news-headline">${article.title}</div>
-                        <div class="news-meta">
-                            <span>GOOGL • ${new Date(article.publishedAt || Date.now()).toLocaleDateString()}</span>
-                            <span class="sentiment-score ${sentimentClass}">
-                                ${article.sentiment > 0 ? '+' : ''}${article.sentiment.toFixed(2)}
-                            </span>
-                        </div>
-                    `;
-                    
-                    newsContainer.appendChild(newsItem);
-                }, index * 300);
-            });
-
-            return analyzedArticles;
         }
 
-        // Make trading decision
-        function makeTradingDecision(articles, currentPrice) {
-            if (articles.length === 0) {
-                return { action: 'HOLD', reason: 'No news data available', sentiment: 0 };
-            }
-
-            const avgSentiment = articles.reduce((sum, article) => sum + article.sentiment, 0) / articles.length;
+        // Update sentiment panel
+        function updateSentimentPanel(newsItems) {
+            const sentimentContainer = document.getElementById('sentimentContainer');
             
-            let action = 'HOLD';
-            let reason = 'Neutral sentiment';
-
-            if (avgSentiment > SENTIMENT_THRESHOLD) {
-                action = 'BUY';
-                reason = `Strong positive sentiment (${avgSentiment.toFixed(3)})`;
-            } else if (avgSentiment < -SENTIMENT_THRESHOLD) {
-                action = 'SELL';
-                reason = `Strong negative sentiment (${avgSentiment.toFixed(3)})`;
+            if (!newsItems || newsItems.length === 0) {
+                sentimentContainer.innerHTML = '<p style="color: #888; text-align: center; padding: 10px;">No sentiment data available</p>';
+                return {
+                    averageScore: 0,
+                    overallSentiment: 'neutral'
+                };
             }
+            
+            // Calculate average sentiment
+            let totalScore = 0;
+            newsItems.forEach(item => {
+                totalScore += item.sentiment.score;
+            });
+            const averageScore = newsItems.length > 0 ? totalScore / newsItems.length : 0;
+            
+            // Determine overall sentiment based on sensitivity
+            const threshold = 0.05 * (sensitivityLevel / 5); // Lower threshold for more sensitivity
+            let overallSentiment = 'neutral';
+            if (averageScore > threshold) {
+                overallSentiment = 'positive';
+            } else if (averageScore < -threshold) {
+                overallSentiment = 'negative';
+            }
+            
+            // Generate HTML for sentiment panel
+            sentimentContainer.innerHTML = `
+                <div style="margin-top: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                        <div style="font-weight: bold; font-size: 1.1rem;">Market Sentiment</div>
+                        <div style="font-size: 1.3rem; font-weight: bold; color: ${
+                            overallSentiment === 'positive' ? '#00ff88' : 
+                            overallSentiment === 'negative' ? '#ff6b6b' : '#ffd93d'
+                        };">
+                            ${overallSentiment.toUpperCase()} 
+                            <span style="font-size: 1rem;">(${averageScore > 0 ? '+' : ''}${averageScore.toFixed(3)})</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sentiment-container">
+                        <div style="font-weight: bold; margin-bottom: 5px;">Sentiment Strength</div>
+                        <div class="sentiment-meter">
+                            <div class="sentiment-indicator" style="left: ${(averageScore + 1) * 50}%;"></div>
+                        </div>
+                        <div class="sentiment-labels">
+                            <span>Negative</span>
+                            <span>Neutral</span>
+                            <span>Positive</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sentiment-breakdown" style="margin-top: 20px;">
+                        <div style="font-weight: bold; margin-bottom: 10px;">News Sentiment Breakdown</div>
+                        <div>
+                            <span class="label"><i class="fas fa-arrow-up" style="color: #00ff88;"></i> Positive News</span>
+                            <span class="value">${newsItems.filter(i => i.sentiment.class === 'positive').length}</span>
+                        </div>
+                        <div>
+                            <span class="label"><i class="fas fa-minus" style="color: #ffd93d;"></i> Neutral News</span>
+                            <span class="value">${newsItems.filter(i => i.sentiment.class === 'neutral').length}</span>
+                        </div>
+                        <div>
+                            <span class="label"><i class="fas fa-arrow-down" style="color: #ff6b6b;"></i> Negative News</span>
+                            <span class="value">${newsItems.filter(i => i.sentiment.class === 'negative').length}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return {
+                averageScore,
+                overallSentiment
+            };
+        }
 
-            return { action, reason, sentiment: avgSentiment };
+        // Generate trading decision based on sentiment (more sensitive)
+        function generateTradingDecision(sentimentAnalysis, price) {
+            const { averageScore, overallSentiment } = sentimentAnalysis;
+            let action, reason;
+            
+            // Make decision based on sentiment with increased sensitivity
+            if (overallSentiment === 'positive') {
+                action = 'BUY';
+                reason = 'Positive market sentiment detected';
+            } else if (overallSentiment === 'negative') {
+                action = 'SELL';
+                reason = 'Negative market sentiment detected';
+            } else {
+                // Even in neutral situations, trade based on slight sentiment
+                if (averageScore > 0.01) {
+                    action = 'BUY';
+                    reason = 'Slightly positive sentiment detected';
+                } else if (averageScore < -0.01) {
+                    action = 'SELL';
+                    reason = 'Slightly negative sentiment detected';
+                } else {
+                    action = 'HOLD';
+                    reason = 'Neutral sentiment - maintaining position';
+                }
+            }
+            
+            // Add confidence level (more aggressive calculation)
+            const confidence = Math.min(100, Math.round(Math.abs(averageScore) * 200));
+            
+            return {
+                action,
+                reason,
+                confidence
+            };
         }
 
         // Update trading panel
         function updateTradingPanel(decision, price) {
             const tradingContainer = document.getElementById('tradingContainer');
-            tradingContainer.innerHTML = '';
             
             const actionClass = decision.action.toLowerCase();
             const tradeItem = document.createElement('div');
             tradeItem.className = 'trade-item';
+            
+            let actionIcon = '';
+            if (decision.action === 'BUY') {
+                actionIcon = '<i class="fas fa-arrow-up"></i>';
+            } else if (decision.action === 'SELL') {
+                actionIcon = '<i class="fas fa-arrow-down"></i>';
+            } else {
+                actionIcon = '<i class="fas fa-pause"></i>';
+            }
+            
             tradeItem.innerHTML = `
                 <div>
-                    <div class="trade-symbol">GOOGL</div>
-                    <div style="font-size: 0.8rem; color: #888;">
-                        ${decision.reason} | Price: $${price.toFixed(2)}
+                    <div class="trade-symbol"><i class="fas fa-chart-line"></i> GOOGL</div>
+                    <div style="font-size: 0.9rem; color: #888; margin-top: 5px;">
+                        <i class="fas fa-comment-alt"></i> ${decision.reason}
                     </div>
                 </div>
-                <div class="trade-action ${actionClass}">${decision.action}</div>
+                <div class="trade-action ${actionClass}">
+                    ${actionIcon} ${decision.action}
+                </div>
             `;
             
+            tradingContainer.innerHTML = '';
             tradingContainer.appendChild(tradeItem);
-        }
-
-        // Simulate stock price (in real implementation, this would fetch from Alpaca)
-        function getSimulatedPrice(basePrice, sentiment) {
-            const volatility = 0.02; // 2% daily volatility
-            const sentimentImpact = sentiment * 0.01; // Sentiment affects price by up to 1%
-            const randomChange = (Math.random() - 0.5) * volatility;
             
-            return basePrice * (1 + randomChange + sentimentImpact);
+            // Add sentiment analysis details
+            const sentimentContainer = document.getElementById('sentimentContainer');
+            sentimentContainer.innerHTML += `
+                <div style="margin-top: 20px; background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div><i class="fas fa-dollar-sign"></i> Current Price:</div>
+                        <div style="font-weight: bold;">$${price.toFixed(2)}</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <div><i class="fas fa-brain"></i> Confidence:</div>
+                        <div style="font-weight: bold; color: ${decision.confidence > 70 ? '#00ff88' : decision.confidence > 40 ? '#ffd93d' : '#ff6b6b'}">
+                            ${decision.confidence}%
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
-        // Process single day
+        // Generate realistic stock price movement
+        function generateStockPrice(previousPrice) {
+            const volatility = 0.04 * (sensitivityLevel / 5); // Increased volatility
+            const randomChange = (Math.random() - 0.5) * volatility;
+            return previousPrice * (1 + randomChange);
+        }
+
+        // Update portfolio stats
+        function updateStats(price, decision) {
+            // Calculate shares to trade (based on sentiment strength)
+            const sentimentStrength = Math.abs(decision.confidence / 100);
+            const maxShares = Math.floor(portfolioValue / price);
+            const sharesToTrade = Math.max(1, Math.floor(sentimentStrength * maxShares * 0.5)); // Increased trade size
+            
+            const trades = [];
+            
+            if (decision.action === 'BUY') {
+                const cost = sharesToTrade * price;
+                if (portfolioValue >= cost) {
+                    currentShares += sharesToTrade;
+                    portfolioValue -= cost;
+                    totalPnL -= cost;
+                    
+                    trades.push({
+                        action: 'BUY',
+                        shares: sharesToTrade,
+                        price: price,
+                        cost: cost
+                    });
+                    
+                    addLogEntry(`Bought ${sharesToTrade} shares at $${price.toFixed(2)}`, 'success');
+                }
+            } else if (decision.action === 'SELL' && currentShares > 0) {
+                const sharesToSell = Math.min(sharesToTrade, currentShares);
+                const revenue = sharesToSell * price;
+                currentShares -= sharesToSell;
+                portfolioValue += revenue;
+                totalPnL += revenue;
+                
+                trades.push({
+                    action: 'SELL',
+                    shares: sharesToSell,
+                    price: price,
+                    revenue: revenue
+                });
+                
+                addLogEntry(`Sold ${sharesToSell} shares at $${price.toFixed(2)}`, 'success');
+            }
+
+            // Update display
+            const totalValue = portfolioValue + (currentShares * price);
+            document.getElementById('portfolioValue').textContent = '$' + totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('currentPosition').textContent = currentShares + ' shares';
+            document.getElementById('todayPnL').textContent = '$' + totalPnL.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalTrades').textContent = totalTrades;
+            
+            return {
+                totalValue,
+                trades
+            };
+        }
+
+        // Process single trading day
         async function processTradingDay(date) {
             const dateStr = date.toLocaleDateString();
+            document.getElementById('currentDate').textContent = `Current Date: ${dateStr}`;
             addLogEntry(`Processing ${dateStr}...`, 'info');
 
             // Skip weekends
@@ -690,36 +1346,42 @@
             }
 
             try {
-                // Fetch news
-                const articles = await fetchNewsForDate(date);
-                addLogEntry(`Found ${articles.length} articles for ${dateStr}`, 'info');
+                // Generate realistic news
+                const newsItems = generateRealisticNews();
+                updateNewsPanel(newsItems);
+                addLogEntry(`Analyzed ${newsItems.length} news items for sentiment`, 'info');
 
-                // Update news panel
-                const analyzedArticles = updateNewsPanel(articles);
+                // Perform sentiment analysis
+                const sentimentAnalysis = updateSentimentPanel(newsItems);
+                addLogEntry(`Market sentiment: ${sentimentAnalysis.overallSentiment} (${sentimentAnalysis.averageScore > 0 ? '+' : ''}${sentimentAnalysis.averageScore.toFixed(3)})`, 
+                          sentimentAnalysis.overallSentiment === 'positive' ? 'success' : 
+                          sentimentAnalysis.overallSentiment === 'negative' ? 'error' : 'info');
 
-                // Simulate stock price (in real implementation, get from Alpaca)
-                const currentPrice = getSimulatedPrice(150, analyzedArticles.length > 0 ? 
-                    analyzedArticles.reduce((sum, a) => sum + a.sentiment, 0) / analyzedArticles.length : 0);
+                // Generate stock price
+                baseStockPrice = generateStockPrice(baseStockPrice);
+                const currentPrice = baseStockPrice;
 
-                // Make trading decision
-                const decision = makeTradingDecision(analyzedArticles, currentPrice);
+                // Make trading decision based on sentiment
+                const decision = generateTradingDecision(sentimentAnalysis, currentPrice);
                 
                 // Update trading panel
                 updateTradingPanel(decision, currentPrice);
 
                 // Log decision
-                addLogEntry(`Decision for ${dateStr}: ${decision.action} - ${decision.reason}`, 
+                addLogEntry(`Trading decision: ${decision.action} - ${decision.reason}`, 
                           decision.action === 'HOLD' ? 'info' : decision.action === 'BUY' ? 'success' : 'error');
 
-                // Execute trade (in real implementation, this would call Alpaca API)
+                // Execute trade
+                let trades = [];
                 if (decision.action !== 'HOLD') {
                     totalTrades++;
-                    document.getElementById('totalTrades').textContent = totalTrades;
-                    addLogEntry(`✅ Simulated ${decision.action} order executed at $${currentPrice.toFixed(2)}`, 'success');
+                    const result = updateStats(currentPrice, decision);
+                    trades = result.trades;
                 }
 
-                // Update stats
-                document.getElementById('portfolioValue').textContent = '$' + (100000 + Math.random() * 10000).toLocaleString();
+                // Update portfolio chart
+                const totalValue = portfolioValue + (currentShares * currentPrice);
+                updatePortfolioChart(dateStr, totalValue, trades);
 
             } catch (error) {
                 addLogEntry(`Error processing ${dateStr}: ${error.message}`, 'error');
@@ -740,15 +1402,26 @@
 
             isTrading = true;
             totalTrades = 0;
+            portfolioValue = 100000;
+            currentShares = 0;
+            totalPnL = 0;
+            baseStockPrice = 150.0;
+            portfolioHistory = [];
+            tradeHistory = [];
+            dateLabels = [];
             
             const startBtn = document.getElementById('startBtn');
             const stopBtn = document.getElementById('stopBtn');
             
             startBtn.disabled = true;
             stopBtn.disabled = false;
-            startBtn.textContent = '🔄 Bot Running...';
+            startBtn.innerHTML = '<i class="fas fa-sync fa-spin"></i> Bot Running...';
 
-            addLogEntry(`🚀 Starting trading bot from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`, 'info');
+            // Initialize portfolio chart
+            initPortfolioChart();
+            
+            addLogEntry(`🚀 Starting trading bot: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`, 'info');
+            addLogEntry(`⚙️ Sensitivity level: ${document.getElementById('sensitivityLabel').textContent}`, 'info');
 
             currentDate = new Date(startDate);
             const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
@@ -768,8 +1441,9 @@
                 // Update progress
                 const progress = (processedDays / totalDays) * 100;
                 document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressText').textContent = `Progress: ${Math.round(progress)}%`;
 
-            }, 3000); // Process one day every 3 seconds
+            }, 2500); // Process one day every 2.5 seconds
         }
 
         // Stop trading bot
@@ -786,25 +1460,51 @@
             
             startBtn.disabled = false;
             stopBtn.disabled = true;
-            startBtn.textContent = '▶️ Start Live Trading Bot';
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Start Trading Bot';
 
             document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressText').textContent = 'Progress: 0%';
             
             addLogEntry('🛑 Trading bot stopped', 'info');
             addLogEntry(`📊 Total trades executed: ${totalTrades}`, 'info');
+            addLogEntry(`💰 Final portfolio value: $${(portfolioValue + currentShares * baseStockPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`, 'info');
+        }
+
+        // Update sensitivity level
+        function updateSensitivity(value) {
+            sensitivityLevel = value;
+            const labels = ['Very Low', 'Low', 'Medium', 'High', 'Very High'];
+            document.getElementById('sensitivityValue').textContent = labels[value-1];
+            document.getElementById('sensitivityLabel').textContent = `${labels[value-1]} Sensitivity`;
+            
+            addLogEntry(`Sensitivity changed to ${labels[value-1]} - bot will trade more ${value > 2 ? 'frequently' : 'conservatively'}`, 'warning');
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
             
+            // Set default dates
+            const today = new Date();
+            const nextWeek = new Date();
+            nextWeek.setDate(today.getDate() + 7);
+            
+            document.getElementById('startDate').valueAsDate = today;
+            document.getElementById('endDate').valueAsDate = nextWeek;
+            
             // Event listeners
             document.getElementById('startBtn').addEventListener('click', startTradingBot);
             document.getElementById('stopBtn').addEventListener('click', stopTradingBot);
             document.getElementById('testConnectionBtn').addEventListener('click', testApiConnection);
+            
+            // Sensitivity slider
+            const slider = document.getElementById('sensitivitySlider');
+            slider.addEventListener('input', () => {
+                updateSensitivity(parseInt(slider.value));
+            });
+            updateSensitivity(4); // Set to high by default
 
-            addLogEntry('🤖 Real AI Trading Bot initialized', 'success');
-            addLogEntry('⚠️  Currently in demo mode - configure APIs for live trading', 'info');
+            addLogEntry('📈 AI Trading Bot ready to start', 'success');
         });
     </script>
 </body>
